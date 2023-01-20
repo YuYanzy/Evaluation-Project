@@ -165,7 +165,7 @@ class EventView {
     }
 
 
-    addEvent(event) {
+    addNewEvent(event) {
         this.appendEvent(event);
         const domID = "event" + event.id;
         const eventRow = document.getElementById(`${domID}`)
@@ -193,10 +193,10 @@ class EventController {
 
     init() {
         this.setUpEvents();
-        this.refreshEvents();
+        this.fetchEvents();
     }
 
-    refreshEvents() {
+    fetchEvents() {
         this.eventModel.fetchEvents().then(events => {
             console.log(events);
             this.eventView.renderEvents(events);
@@ -214,7 +214,7 @@ class EventController {
             e.stopPropagation();
             const event = { eventName: "", startDate: "", endDate: "" };
             this.eventModel.addEvent(event).then((newEvent) => {
-                this.eventView.addEvent(newEvent);
+                this.eventView.addNewEvent(newEvent);
             })
         })
     }
@@ -256,6 +256,7 @@ class EventController {
                     deleteBtn.innerHTML = deletIcon;
                 }
             }
+
             if (event.target.classList.contains("event_btn-Edit")) {
                 const id = event.target.closest("tr").id;
                 const eventName = event.target.closest("tr").querySelector(".event_name input");
