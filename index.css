@@ -14,3 +14,39 @@ body {
     font-size: 1.6rem;
 }
 
+.app {
+    border: 1px solid black;
+    text-align: center;
+    width: 800px;
+    margin: auto;
+    padding: 3rem;
+}
+
+.event-table{
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    width: 90%;
+    text-align: center;
+    align-items: center;
+}
+
+.event-table-body tr{
+    height: 50px;
+    background-color: #e6e2d3;
+    font-size: 12px;
+}
+
+
+.event-table-body td{   
+    border: none;
+}
+
+.event_btn-Add{
+    background-color:#008cba;
+    font-size: 20px;
+    color: #fff;
+    width: 20%;
+    height: 50px;
+    border:1px solid #008cba;
+    border-radius: 10px;
+}
