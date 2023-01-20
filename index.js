@@ -1,3 +1,15 @@
+const editIcon = '<svg focusable="false" aria-hidden="true" viewBox="0 0 24 24" data-testid="EditIcon" aria-label="fontSize small"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>';
+
+const deletIcon = '<svg focusable="false" aria-hidden="true" viewBox="0 0 24 24" data-testid="DeleteIcon" aria-label="fontSize small"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg>';
+
+const saveIcon = '<svg focusable="false" aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21,20V8.414a1,1,0,0,0-.293-.707L16.293,3.293A1,1,0,0,0,15.586,3H4A1,1,0,0,0,3,4V20a1,1,0,0,0,1,1H20A1,1,0,0,0,21,20ZM9,8h4a1,1,0,0,1,0,2H9A1,1,0,0,1,9,8Zm7,11H8V15a1,1,0,0,1,1-1h6a1,1,0,0,1,1,1Z"/></svg>';
+
+const cancelIcon = '<svg focusable="false" aria-hidden="true" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M19.587 16.001l6.096 6.096c0.396 0.396 0.396 1.039 0 1.435l-2.151 2.151c-0.396 0.396-1.038 0.396-1.435 0l-6.097-6.096-6.097 6.096c-0.396 0.396-1.038 0.396-1.434 0l-2.152-2.151c-0.396-0.396-0.396-1.038 0-1.435l6.097-6.096-6.097-6.097c-0.396-0.396-0.396-1.039 0-1.435l2.153-2.151c0.396-0.396 1.038-0.396 1.434 0l6.096 6.097 6.097-6.097c0.396-0.396 1.038-0.396 1.435 0l2.151 2.152c0.396 0.396 0.396 1.038 0 1.435l-6.096 6.096z"></path></svg>'
+
+const addIcon = '<svg focusable viewBox="0 0 24 24" aria-hidden="true xmlns="http://www.w3.org/2000/svg"><path d="M12 6V18M18 12H6" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+
+
+
 const API = (() => {
     const URL = "http://localhost:3000/events";
 
@@ -139,10 +151,12 @@ class EventView {
         actionTd.classList.add("event_action");
         const editBtn = document.createElement("button");
         editBtn.classList.add("event_btn-Edit");
-        editBtn.textContent = "Edit";
+        editBtn.setAttribute("status", "edit")
+        editBtn.innerHTML = editIcon;
         const deleteBtn = document.createElement("button");
         deleteBtn.classList.add("event_btn-Delete");
-        deleteBtn.textContent = "Delete";
+        deleteBtn.setAttribute("status", "delete")
+        deleteBtn.innerHTML = deletIcon;
         actionTd.appendChild(editBtn);
         actionTd.appendChild(deleteBtn);
 
@@ -159,10 +173,13 @@ class EventView {
         const startDate = eventRow.querySelector(".event_startDate input");
         const endDate = eventRow.querySelector(".event_endDate input");
         const editBtn = eventRow.querySelector(".event_btn-Edit");
+        const deleteBtn = eventRow.querySelector(".event_btn-Delete");
         eventName.removeAttribute("disabled");
         startDate.removeAttribute("disabled");
         endDate.removeAttribute("disabled");
-        editBtn.textContent = "Save";
+        editBtn.setAttribute("status", "add");
+        editBtn.innerHTML = addIcon;
+        deleteBtn.innerHTML = cancelIcon;
         eventName.focus();
     }
 }
@@ -176,6 +193,10 @@ class EventController {
 
     init() {
         this.setUpEvents();
+        this.refreshEvents();
+    }
+
+    refreshEvents() {
         this.eventModel.fetchEvents().then(events => {
             console.log(events);
             this.eventView.renderEvents(events);
@@ -201,21 +222,43 @@ class EventController {
     setUpTableEvent() {
         this.eventView.eventTableBody.addEventListener("click", (event) => {
             if (event.target.classList.contains("event_btn-Delete")) {
-                const id = event.target.closest("tr").id;
-                this.eventModel.deleteEvent(id.substr(5)).then(() => {
-                    this.eventView.removeEvent(id);
-                })
+                if (event.target.closest("tr").querySelector(".event_btn-Edit").getAttribute("status") !== "save") {
+                    const id = event.target.closest("tr").id;
+                    this.eventModel.deleteEvent(id.substr(5)).then(() => {
+                        this.eventView.removeEvent(id);
+                    })
+                } else {
+                    const id = event.target.closest("tr").id;
+                    const eventName = event.target.closest("tr").querySelector(".event_name input");
+                    const startDate = event.target.closest("tr").querySelector(".event_startDate input");
+                    const endDate = event.target.closest("tr").querySelector(".event_endDate input");
+                    const editBtn = event.target.closest("tr").querySelector(".event_btn-Edit");
+                    const deleteBtn = event.target.closest("tr").querySelector(".event_btn-Delete");
+                    const modifyEvent = this.eventModel.getEvents().filter((data) => data.id === +id.substr(5))[0];
+                    eventName.value = modifyEvent.eventName;
+                    startDate.value = modifyEvent.startDate;
+                    endDate.value = modifyEvent.endDate;
+                    eventName.setAttribute("disabled", "disabled");
+                    startDate.setAttribute("disabled", "disabled");
+                    endDate.setAttribute("disabled", "disabled");
+                    editBtn.setAttribute("status", "edit");
+                    editBtn.innerHTML = editIcon;
+                    deleteBtn.innerHTML = deletIcon;
+                }
             }
             if (event.target.classList.contains("event_btn-Edit")) {
                 const id = event.target.closest("tr").id;
                 const eventName = event.target.closest("tr").querySelector(".event_name input");
                 const startDate = event.target.closest("tr").querySelector(".event_startDate input");
                 const endDate = event.target.closest("tr").querySelector(".event_endDate input");
-                if (event.target.textContent === "Edit") {
+                const deleteBtn = event.target.closest("tr").querySelector(".event_btn-Delete");
+                if (event.target.getAttribute("status") === "edit") {
                     eventName.removeAttribute("disabled");
                     startDate.removeAttribute("disabled");
                     endDate.removeAttribute("disabled");
-                    event.target.textContent = "Save";
+                    event.target.setAttribute("status", "save");
+                    event.target.innerHTML = saveIcon;
+                    deleteBtn.innerHTML = cancelIcon;
                 } else {
                     if (eventName.value === "" || startDate.value === "" || endDate.value === "") {
                         alert("Please enter all the fields")
@@ -229,7 +272,9 @@ class EventController {
                             eventName.setAttribute("disabled", "disabled");
                             startDate.setAttribute("disabled", "disabled");
                             endDate.setAttribute("disabled", "disabled");
-                            event.target.textContent = "Edit";
+                            event.target.setAttribute("status", "edit");
+                            event.target.innerHTML = editIcon;
+                            deleteBtn.innerHTML = deletIcon;
                         })
                     }
                 }
