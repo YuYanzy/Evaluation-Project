@@ -219,6 +219,16 @@ class EventController {
         })
     }
 
+    verifyEventInput(event) {
+        if (event.eventName === "" || event.startDate === "" || event.endDate === "") {
+            return "emptyFeild";
+        } else if (Date.parse(event.startDate) > Date.parse(event.endDate)) {
+            return "inValidDate";
+        } else {
+            return "pass"
+        }
+    }
+
     setUpTableEvent() {
         this.eventView.eventTableBody.addEventListener("click", (event) => {
             if (event.target.classList.contains("event_btn-Delete")) {
@@ -260,14 +270,13 @@ class EventController {
                     event.target.innerHTML = saveIcon;
                     deleteBtn.innerHTML = cancelIcon;
                 } else {
-                    if (eventName.value === "" || startDate.value === "" || endDate.value === "") {
-                        alert("Please enter all the fields")
-                    } else {
-                        const modifiedEvent = {
-                            eventName: eventName.value,
-                            startDate: startDate.value,
-                            endDate: endDate.value
-                        }
+                    const modifiedEvent = {
+                        eventName: eventName.value,
+                        startDate: startDate.value,
+                        endDate: endDate.value
+                    }
+                    if (this.verifyEventInput(modifiedEvent) === "pass") {
+
                         this.eventModel.modifyEvent(id.substr(5), modifiedEvent).then(() => {
                             eventName.setAttribute("disabled", "disabled");
                             startDate.setAttribute("disabled", "disabled");
@@ -276,6 +285,11 @@ class EventController {
                             event.target.innerHTML = editIcon;
                             deleteBtn.innerHTML = deletIcon;
                         })
+                    } else if (this.verifyEventInput(modifiedEvent) === "emptyFeild") {
+                        alert("Please fill in all fields");
+                    } else {
+                        alert("Start date must be earlier than end date");
+
                     }
                 }
             }
